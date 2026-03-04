@@ -6,8 +6,14 @@ const toMarch8Btn = document.getElementById('to-march8');
 const restartGameBtn = document.getElementById('restart-game');
 const movesEl = document.getElementById('moves');
 const pairsEl = document.getElementById('pairs');
+const pairsTotalEl = document.getElementById('pairs-total');
 const gameMessageEl = document.getElementById('game-message');
 const memoryGridEl = document.getElementById('memory-grid');
+const togetherTimerEl = document.getElementById('together-timer');
+const introHeartEl = document.getElementById('intro-heart');
+const photoModalEl = document.getElementById('photo-modal');
+const photoModalImageEl = document.getElementById('photo-modal-image');
+const photoModalCloseEl = document.getElementById('photo-modal-close');
 
 function showScreen(screenId) {
   screens.forEach((screen) => {
@@ -33,7 +39,9 @@ document.querySelectorAll('.reason-item .heart-check').forEach((button) => {
 });
 
 // Memory game.
-const symbols = ['🐻', '🌸', '💖', '🎀', '🍓', '💌'];
+const baseSymbols = ['🐻', '🌸', '💖', '🎀', '🍓', '💌'];
+const compactGameMedia = window.matchMedia('(max-width: 420px)');
+let symbols = baseSymbols;
 let deck = [];
 let openCards = [];
 let lockBoard = false;
@@ -127,11 +135,13 @@ function renderGame() {
 }
 
 function startGameBoard() {
+  symbols = compactGameMedia.matches ? baseSymbols.slice(0, 4) : baseSymbols;
   openCards = [];
   lockBoard = false;
   moves = 0;
   pairs = 0;
   toMemoriesBtn.disabled = true;
+  if (pairsTotalEl) pairsTotalEl.textContent = String(symbols.length);
   updateStats();
   setGameText('Открой две карточки.');
   renderGame();
@@ -151,6 +161,81 @@ document.querySelectorAll('.memory-card img').forEach((image) => {
   if (image.complete && image.naturalWidth > 0) {
     setLoaded();
   }
+});
+
+// "How long together" timer.
+function updateTogetherTimer() {
+  if (!togetherTimerEl) return;
+  const startDateRaw = togetherTimerEl.dataset.startDate || '';
+  const match = startDateRaw.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/
+  );
+  if (!match) return;
+
+  const [, y, m, d, hh, mm, ss = '0'] = match;
+  // Build local datetime explicitly to avoid browser parsing quirks.
+  const startDate = new Date(
+    Number(y),
+    Number(m) - 1,
+    Number(d),
+    Number(hh),
+    Number(mm),
+    Number(ss)
+  );
+
+  const now = new Date();
+  const diffMs = Math.max(now.getTime() - startDate.getTime(), 0);
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  document.getElementById('timer-days').textContent = String(days);
+}
+
+updateTogetherTimer();
+setInterval(updateTogetherTimer, 30000);
+
+// Intro heart animation.
+function hideIntroHeart() {
+  if (!introHeartEl) return;
+  introHeartEl.classList.add('is-hidden');
+  setTimeout(() => introHeartEl.remove(), 450);
+}
+
+const introReduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+setTimeout(hideIntroHeart, introReduceMotion ? 300 : 1400);
+
+// Polaroid photo viewer.
+function openPhotoModal(image) {
+  if (!photoModalEl || !photoModalImageEl || !image?.src) return;
+  photoModalImageEl.src = image.src;
+  photoModalImageEl.alt = image.alt || 'Фото';
+  photoModalEl.classList.add('is-open');
+  photoModalEl.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('modal-open');
+}
+
+function closePhotoModal() {
+  if (!photoModalEl || !photoModalImageEl) return;
+  photoModalEl.classList.remove('is-open');
+  photoModalEl.setAttribute('aria-hidden', 'true');
+  photoModalImageEl.removeAttribute('src');
+  document.body.classList.remove('modal-open');
+}
+
+document.querySelectorAll('.photo-wrap img').forEach((image) => {
+  image.addEventListener('click', () => {
+    if (image.closest('.photo-wrap').classList.contains('is-empty')) return;
+    openPhotoModal(image);
+  });
+});
+
+if (photoModalCloseEl && photoModalEl) {
+  photoModalCloseEl.addEventListener('click', closePhotoModal);
+  photoModalEl.addEventListener('click', (event) => {
+    if (event.target === photoModalEl) closePhotoModal();
+  });
+}
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') closePhotoModal();
 });
 
 // Falling hearts in background on all screens.
@@ -207,9 +292,11 @@ const onMotionMediaChange = (event) => {
 if (mobileMedia.addEventListener) {
   mobileMedia.addEventListener('change', onMobileMediaChange);
   motionMedia.addEventListener('change', onMotionMediaChange);
+  compactGameMedia.addEventListener('change', startGameBoard);
 } else {
   mobileMedia.addListener(onMobileMediaChange);
   motionMedia.addListener(onMotionMediaChange);
+  compactGameMedia.addListener(startGameBoard);
 }
 
 startHearts();

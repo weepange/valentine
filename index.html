@@ -7,6 +7,9 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div id="intro-heart" aria-hidden="true">
+    <div class="intro-heart-icon">💗</div>
+  </div>
   <div id="heart-rain" aria-hidden="true"></div>
 
   <main class="app">
@@ -15,6 +18,12 @@
         <h1>Привет, любимая</h1>
         <p class="lead">Я сделал это специально для тебя!</p>
         <p class="sub">Пройди мини-игру, чтобы открыть свой сюрприз</p>
+        <div id="together-timer" class="together-timer" data-start-date="2024-10-25T20:00:00">
+          <p class="timer-title">Сколько мы вместе</p>
+          <p class="timer-value">
+            <span id="timer-days">0</span> дней
+          </p>
+        </div>
         <button id="start-btn" class="btn">Начать игру →</button>
       </div>
     </section>
@@ -77,7 +86,7 @@
 
         <div class="stats">
           <span>Ходы: <b id="moves">0</b></span>
-          <span>Пары: <b id="pairs">0</b>/6</span>
+          <span>Пары: <b id="pairs">0</b>/<b id="pairs-total">6</b></span>
         </div>
 
         <div id="memory-grid" class="memory-grid"></div>
@@ -98,42 +107,42 @@
         <div class="gallery" id="gallery">
           <article class="memory-card">
             <div class="photo-wrap is-empty">
-              <img src="images/1.jpg" alt="Воспоминание 1">
+              <img src="images/1.jpg" alt="Воспоминание 1" loading="lazy" decoding="async">
             </div>
             <p>Воспоминание 1</p>
           </article>
 
           <article class="memory-card">
             <div class="photo-wrap is-empty">
-              <img src="images/2.jpg" alt="Воспоминание 2">
+              <img src="images/2.jpg" alt="Воспоминание 2" loading="lazy" decoding="async">
             </div>
             <p>Воспоминание 2</p>
           </article>
 
           <article class="memory-card">
             <div class="photo-wrap is-empty">
-              <img src="images/3.jpg" alt="Воспоминание 3">
+              <img src="images/3.jpg" alt="Воспоминание 3" loading="lazy" decoding="async">
             </div>
             <p>Воспоминание 3</p>
           </article>
 
           <article class="memory-card">
             <div class="photo-wrap is-empty">
-              <img src="images/4.jpg" alt="Воспоминание 4">
+              <img src="images/4.jpg" alt="Воспоминание 4" loading="lazy" decoding="async">
             </div>
             <p>Воспоминание 4</p>
           </article>
 
           <article class="memory-card">
             <div class="photo-wrap is-empty">
-              <img src="images/5.jpg" alt="Воспоминание 5">
+              <img src="images/5.jpg" alt="Воспоминание 5" loading="lazy" decoding="async">
             </div>
             <p>Воспоминание 5</p>
           </article>
 
           <article class="memory-card">
             <div class="photo-wrap is-empty">
-              <img src="images/6.jpg" alt="Воспоминание 6">
+              <img src="images/6.jpg" alt="Воспоминание 6" loading="lazy" decoding="async">
             </div>
             <p>Воспоминание 6</p>
           </article>
@@ -151,6 +160,11 @@
       </div>
     </section>
   </main>
+
+  <div id="photo-modal" class="photo-modal" aria-hidden="true">
+    <button id="photo-modal-close" class="photo-modal-close" type="button" aria-label="Закрыть">✕</button>
+    <img id="photo-modal-image" src="" alt="Увеличенное фото">
+  </div>
 
   <script src="script.js"></script>
 </body>
