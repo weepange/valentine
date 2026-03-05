@@ -47,6 +47,7 @@ let openCards = [];
 let lockBoard = false;
 let moves = 0;
 let pairs = 0;
+let targetPairs = baseSymbols.length;
 
 function shuffle(arr) {
   const clone = [...arr];
@@ -103,7 +104,7 @@ function onCardClick(card) {
     updateStats();
     setGameText('Отлично! Это пара.');
 
-    if (pairs === symbols.length) {
+    if (pairs === targetPairs) {
       finishGame();
     }
     return;
@@ -121,12 +122,28 @@ function onCardClick(card) {
 }
 
 function renderGame() {
-  deck = shuffle([...symbols, ...symbols]);
+  if (compactGameMedia.matches) {
+    // 3x3 on phones: 4 pairs + 1 bonus tile.
+    deck = shuffle([...symbols, ...symbols, '✨']);
+  } else {
+    deck = shuffle([...symbols, ...symbols]);
+  }
+
   memoryGridEl.innerHTML = '';
   deck.forEach((symbol) => {
     const card = document.createElement('button');
     card.type = 'button';
     card.className = 'memory-card-btn';
+
+    if (symbol === '✨') {
+      card.classList.add('bonus');
+      card.textContent = symbol;
+      card.disabled = true;
+      card.setAttribute('aria-label', 'Бонус');
+      memoryGridEl.appendChild(card);
+      return;
+    }
+
     card.dataset.symbol = symbol;
     card.textContent = '?';
     card.addEventListener('click', () => onCardClick(card));
@@ -136,12 +153,13 @@ function renderGame() {
 
 function startGameBoard() {
   symbols = compactGameMedia.matches ? baseSymbols.slice(0, 4) : baseSymbols;
+  targetPairs = symbols.length;
   openCards = [];
   lockBoard = false;
   moves = 0;
   pairs = 0;
   toMemoriesBtn.disabled = true;
-  if (pairsTotalEl) pairsTotalEl.textContent = String(symbols.length);
+  if (pairsTotalEl) pairsTotalEl.textContent = String(targetPairs);
   updateStats();
   setGameText('Открой две карточки.');
   renderGame();
